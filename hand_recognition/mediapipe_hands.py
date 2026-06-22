@@ -47,7 +47,7 @@ class HandRecognizerThread:
             mp_frame = mp.Image(image_format=mp.ImageFormat.SRGB, data=frame)
 
             # save current time for internal interpolation
-            timestamp_ms = int(self.cap.get(cv2.CAP_PROP_POS_MSEC))
+            timestamp_ms = int(time.time() * 1000)
 
             # Detect hand landmarks from the input image.
             detection_result = self.detector.detect_for_video(
@@ -74,7 +74,8 @@ class HandRecognizerThread:
                     self.results = {
                         "index": index,
                         "middle_finger": middle_finger,
-                        "thumb": thumb
+                        "thumb": thumb,
+                        "timestamp" : timestamp_ms
                     }
 
             else:
@@ -87,6 +88,7 @@ class HandRecognizerThread:
                 # 8 = Zeigefinger
                 # 4 daumen
                 # 12 Mittelfinger
+            time.sleep(0.001)
         self.stop()
 
     def stop(self):
