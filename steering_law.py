@@ -7,6 +7,7 @@ import sys
 import time
 from configparser import ConfigParser
 import pandas as pd
+import random
 
 
 def setup_window(window):
@@ -32,9 +33,10 @@ class SteeringApp:
         self.trials = trials
         self.current_trial = 1
 
-        CONFIG_FILE_PATH = "config.ini"
-        self.latency, self.path_width, self.distance = self.read_app_params(
-            CONFIG_FILE_PATH)
+        self.path_widths, self.distances = self.read_app_params()
+
+        self.combinations = []
+        self.current_combination = None
 
         self.objects = []
 
@@ -44,15 +46,42 @@ class SteeringApp:
         self.log_df = self.create_log_df()
         self.DATA_PATH = "./data/"
 
-    def read_app_params(self, config_file_path):
+        self.create_all_combinations()
+
+    def start(self):
+        self.choose_combination()
+        self.create_path()
+
+    def read_app_params(self):
         parser = ConfigParser()
         parser.read("config.ini")
         slinfo = parser["SLCONFIG"]
-        return int(slinfo["latency"]), int(slinfo["tunnel_width"]), int(slinfo["distance"])
+        path_widths = [int(w) for w in slinfo["tunnel_widths"].split(",")]
+        distances = [int(d) for d in slinfo["distances"].split(",")]
+        return path_widths, distances
+
+    def create_all_combinations(self):
+        for width in self.path_widths:
+            for distance in self.distances:
+                self.combinations.append({
+                    "width": width,
+                    "distance": distance
+                })
+
+    def choose_combination(self):
+        index = int(random.random() * len(self.combinations))
+        self.current_combination = self.combinations.pop(index)
+
+    def next_combination(self):
+        self.save_log_data()
+        self.log_df = self.create_log_df()
+        self.objects.clear()
+        self.choose_combination()
+        self.create_path()
 
     def create_path(self):
-        width = self.path_width
-        distance = self.distance
+        width = self.current_combination["width"]
+        distance = self.current_combination["distance"]
 
         start_x = self.window.width // 2 - distance // 2
         start_y = self.window.height // 2 - width // 2
@@ -87,7 +116,6 @@ class SteeringApp:
     def draw_mouse_circle(self):
         RADIUS = 5
         center_offset = RADIUS//2
-        print(self.mouse_state["x"])
         mouse_circle = shapes.Circle(
             self.mouse_state["x"] - center_offset, self.mouse_state["y"] - center_offset, radius=RADIUS, color=(0, 255, 0), batch=self.batch)
         self.mouse_circle = mouse_circle
@@ -122,13 +150,32 @@ class SteeringApp:
             f"{self.DATA_PATH}steering_{self.path_width}_{self.distance}_{self.pid}", index=False)
 
     def next_trial(self):
-        self.save_log_data()
         self.current_trial += 1
         self.objects.clear()
+        self.create_path()
 
     def end_app(self):
         self.save_log_data()
         pyglet.app.exit()
+
+    def cross_start_line(self):
+        self.set_start_timestamp()
+
+    def cross_goal_line(self):
+        self.add_data_line(success=True)
+        if self.current_trial < self.trials:
+            self.next_trial()
+        else:
+            self.current_trial = 1
+            self.next_combination()
+
+    def unsuccessful_try(self):
+        self.add_data_line(success=False)
+        if self.current_trial < self.trials:
+            self.next_trial()
+        else:
+            self.current_trial = 1
+            self.next_combination()
 
 
 win = window.Window(vsync=False)
@@ -150,21 +197,22 @@ if len(sys.argv) > 2:
 input_mode = "mouse"  # param?
 
 app = SteeringApp(win, participantID, trials)
-app.create_path()
+app.start()
 
 
 @win.event
 def on_mouse_enter(x, y):
     app.draw_mouse_circle()
 
-@win.event  
-def on_mouse_motion(x,y, dx, dy):
+
+@win.event
+def on_mouse_motion(x, y, dx, dy):
     app.update_mouse_circle(x, y)
+
 
 @win.event
 def on_mouse_drag(x, y, dx, dy, buttons, modifiers):
     app.update_mouse_circle(x, y)
-    
 
 
 @win.event
