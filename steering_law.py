@@ -24,12 +24,13 @@ def maximize_window_size(window):
 
 
 class SteeringApp:
-    def __init__(self, window, pid, trials):
+    def __init__(self, window, pid, trials, input_mode):
         self.mouse_state = mouse.MouseStateHandler()
         window.push_handlers(self.mouse_state)
         self.window = window
         self.batch = pyglet.graphics.Batch()
         self.pid = pid
+        
         self.trials = trials
         self.current_trial = 1
 
@@ -44,13 +45,7 @@ class SteeringApp:
 
         self.trial_start_timestamp = int(time.time())
         self.log_df = self.create_log_df()
-        self.DATA_PATH = "./data/"
-
-        self.create_all_combinations()
-
-    def start(self):
-        self.choose_combination()
-        self.create_path()
+        self.DATA_PATH = f"./data/{input_mode}/"
 
     def read_app_params(self):
         parser = ConfigParser()
@@ -184,6 +179,7 @@ setup_window(win)
 
 participantID = 0
 trials = 1
+input_mode = "unknown" 
 
 # first command line input is participant-ID
 if len(sys.argv) > 1:
@@ -193,10 +189,12 @@ if len(sys.argv) > 1:
 if len(sys.argv) > 2:
     trials = int(sys.argv[2])
 
+# third command line input is input mode (relevant for logging)
+if len(sys.argv) > 3:
+    input_mode = int(sys.argv[3])
 
-input_mode = "mouse"  # param?
 
-app = SteeringApp(win, participantID, trials)
+app = SteeringApp(win, participantID, trials, input_mode)
 app.start()
 
 
