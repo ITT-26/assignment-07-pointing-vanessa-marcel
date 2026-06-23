@@ -29,6 +29,11 @@ DEQUE_LEN = 15
 x_speed_deque = deque(maxlen=DEQUE_LEN)
 y_speed_deque = deque(maxlen=DEQUE_LEN)
 
+CLICK_THRESHOLD = 0.05
+last_click = 0
+
+
+
 is_running = True
 
 
@@ -66,7 +71,7 @@ def get_index_deltas(x, y):
 
 
 def translate_speed_to_mouse_movement(speed_x, speed_y, dt):
-    SENSITIVITY = 2500
+    SENSITIVITY = 2700
 
     movement_x = SENSITIVITY * speed_x * dt
     movement_y = SENSITIVITY * speed_y * dt
@@ -77,6 +82,17 @@ def translate_speed_to_mouse_movement(speed_x, speed_y, dt):
 def move_mouse(dx, dy):
     mouse.move(int(dx), int(dy))
 
+def checkForClick(thumb_x, thumb_y, mid_x, mid_y):
+    global last_click
+    if (mid_x - thumb_x) > -CLICK_THRESHOLD and (mid_x - thumb_x) < CLICK_THRESHOLD and (mid_y - thumb_y) > -CLICK_THRESHOLD and (mid_y - thumb_y):
+        if (time.time() - last_click) >= 0.5:
+            print("click")
+            mouse.press(Button.left)
+            mouse.release(Button.left)
+            last_click = time.time()
+            print(last_click)
+    else:
+        pass
 
 def on_key_press(key):
     global is_running
@@ -129,6 +145,11 @@ while is_running:
 
                 mouse_dx, mouse_dy = translate_speed_to_mouse_movement(
                     speed_x, speed_y, dt_s)
+            middle_x = recognizer.results["middle_finger"]["x"]
+            middle_y = recognizer.results["middle_finger"]["y"]
+            thumb_x = recognizer.results["thumb"]["x"]
+            thumb_y = recognizer.results["thumb"]["y"]
+            checkForClick(thumb_x, thumb_y, middle_x, middle_y)
 
         else:
             last_timestamp = int(time.time() * 1000.0)
