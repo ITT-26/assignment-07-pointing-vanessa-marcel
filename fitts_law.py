@@ -81,7 +81,7 @@ def updateFl():
     circles[int(current_target)].setColour(True)
 
 def saveData():
-    filename = f"data/fitts_{target_amount}_{target_d}_{target_w}_{participantID}.csv"
+    filename = f"data/fitts_{target_amount}_{target_w}_{target_d}_{participantID}.csv"
     with open(filename, 'w', newline='') as f:
         csv_writer = csv.writer(f)
         csv_writer.writerows(data)
@@ -148,12 +148,12 @@ def on_mouse_press(x, y, button, modifiers):
             trial_count += 1
             if trial_count == trials:
                 saveData()
-                combi_count +=1
                 print(combi_count)
                 if combi_count == combi_amount:
                     os._exit(0)
                 chooseCombination()
                 resetCircles()
+                combi_count +=1
                 trial_count = 0
             setupFL()
         else:
