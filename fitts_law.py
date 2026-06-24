@@ -8,9 +8,10 @@ import math
 import time
 import os
 import csv
+import random
 
 participantID = 0
-trials = 5
+trials = 3
 
 config_object = ConfigParser()
 
@@ -18,20 +19,24 @@ config_object.read("config.ini")
 
 flinfo = config_object["FLCONFIG"]
 
-target_w = int(flinfo["target_w"])
-target_d = int(flinfo["target_d"])
-target_r = target_w /2
+target_widths = [int(w) for w in flinfo["target_widths"].split(",")]
+target_distances = [int(d) for d in flinfo["target_distances"].split(",")]
+target_w = 0
+target_d = 0
+target_r = 0
 target_amount = int(flinfo["target_amount"])
 
 current_target = 0
 counter = 0
 trial_count = 1
-data = [["iteration", "pid", "num_targets", "target_w", "target_d", "target_id", "timestamp"]]
+input = 0
+data = [["iteration", "pid", "num_targets", "target_w", "target_d", "target_id", "timestamp", "input"]]
+inputs =  ["pose", "mouse", "latency", "touchpad"]
+combinations = []
+combi_count = 1
+combi_amount = 0
 
 PADDING = 50
-WINDOW_SIZE = (2*PADDING + 2*target_w + target_d)
-
-win = window.Window(WINDOW_SIZE, WINDOW_SIZE)
 
 circles = []
 batch = pyglet.graphics.Batch()
@@ -44,6 +49,10 @@ if len(sys.argv) > 1:
 if len(sys.argv) > 2:
     trials = int(sys.argv[2])
 
+# third command for input method
+if len(sys.argv) > 3:
+    input = int(sys.argv[3])
+
 class Circle:
     def __init__(self, x, y):
         self.circle = shapes.Circle(x, y, target_r, color=(128, 128, 128), batch=batch)
@@ -54,9 +63,12 @@ class Circle:
         else:
             self.circle.color = (128, 128, 128)
 
+    def delete(self):
+        self.circle.delete()
+
 def addData():
-    global trial_count, participantID, target_amount, target_w, target_d, counter
-    data.append([trial_count, participantID, target_amount, target_w, target_d, counter, int(time.time())])
+    global trial_count, participantID, target_amount, target_w, target_d, counter, inputs, input
+    data.append([trial_count, participantID, target_amount, target_w, target_d, counter, int(time.time()), inputs[input]])
     print(data[-1])
 
 def updateFl():
@@ -69,11 +81,35 @@ def updateFl():
     circles[int(current_target)].setColour(True)
 
 def saveData():
-    filename = f"data/fitts_{target_amount}_{target_d}_{target_w}_{participantID}.csv"
+    filename = f"data/fitts_{target_amount}_{target_w}_{target_d}_{participantID}.csv"
     with open(filename, 'w', newline='') as f:
         csv_writer = csv.writer(f)
         csv_writer.writerows(data)
 
+def createAllCombinations():
+    global combi_amount
+    for width in target_widths:
+        for distance in target_distances:
+            combinations.append({
+                    "width": width,
+                    "distance": distance
+                })
+    combi_amount = len(combinations)
+
+def chooseCombination():
+    global target_w, target_r, target_d
+    index = random.randrange(0, len(combinations))
+    target_w = combinations[index]["width"]
+    target_r = target_w/2
+    target_d = combinations[index]["distance"]
+    combinations.pop(index)
+
+createAllCombinations()
+chooseCombination()
+
+WINDOW_SIZE = (2*PADDING + 2*target_w + target_d)
+
+win = window.Window(WINDOW_SIZE, WINDOW_SIZE)
 
 def setupFL():
     global target_amount, target_d, current_target, data, counter
@@ -92,24 +128,34 @@ def createCircles():
 
         circles.append(Circle(x, y))
 
+def resetCircles():
+    for c in circles:
+        c.delete()
+    circles.clear()
+    createCircles()
+
 createCircles()
 setupFL()
 
 @win.event
 def on_mouse_press(x, y, button, modifiers):
-    global target_w, target_r, current_target, target_amount, counter, trial_count, trials
+    global target_w, target_r, current_target, target_amount, counter, trial_count, trials, combi_count, combi_amount
     if x > circles[int(current_target)].circle.x - target_r and x < circles[int(current_target)].circle.x + target_r and y > circles[int(current_target)].circle.y - target_r and y < circles[int(current_target)].circle.y + target_r:
         if counter == target_amount-1:
             addData()
             counter += 1
             circles[int(current_target)].setColour(False)
-            if trial_count == trials:
-                saveData()    
-                os._exit(0)
-            setupFL()
-            print(trial_count)
             trial_count += 1
-            print(trial_count)
+            if trial_count == trials:
+                saveData()
+                print(combi_count)
+                if combi_count == combi_amount:
+                    os._exit(0)
+                chooseCombination()
+                resetCircles()
+                combi_count +=1
+                trial_count = 0
+            setupFL()
         else:
             addData()
             counter += 1
