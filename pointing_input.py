@@ -24,17 +24,21 @@ last_index_y = None
 last_timestamp = int(time.time() * 1000)
 last_recog_time = time.time()
 
-DEQUE_LEN = 15
+DEQUE_LEN = 10
 
 x_speed_deque = deque(maxlen=DEQUE_LEN)
 y_speed_deque = deque(maxlen=DEQUE_LEN)
 
-CLICK_THRESHOLD = 0.05
+CLICK_THRESHOLD = 0.04
 last_click = 0
 
 
-
 is_running = True
+
+sensitivity = 50
+
+if len(sys.argv) > 1:
+    sensitivity = int(sys.argv[1])
 
 
 def get_velocity_avgs():
@@ -70,17 +74,18 @@ def get_index_deltas(x, y):
     return dx, dy
 
 
-def translate_speed_to_mouse_movement(speed_x, speed_y, dt):
-    SENSITIVITY = 2700
+def translate_speed_to_mouse_movement(speed_x, speed_y):
+    global sensitivity
 
-    movement_x = SENSITIVITY * speed_x * dt
-    movement_y = SENSITIVITY * speed_y * dt
+    movement_x = sensitivity * speed_x 
+    movement_y = sensitivity * speed_y 
 
     return movement_x, movement_y
 
 
 def move_mouse(dx, dy):
     mouse.move(int(dx), int(dy))
+
 
 def checkForClick(thumb_x, thumb_y, mid_x, mid_y):
     global last_click
@@ -93,6 +98,7 @@ def checkForClick(thumb_x, thumb_y, mid_x, mid_y):
             print(last_click)
     else:
         pass
+
 
 def on_key_press(key):
     global is_running
@@ -116,13 +122,59 @@ listener = keyboard.Listener(on_press=on_key_press).start()
 while is_running:
     mouse_dx = 0
     mouse_dy = 0
+    
+    index_x  = None
+    index_y = None  
+    index_start_x = None
+    index_start_y = None
+    middle_x = None
+    middle_y = None
+    thumb_x = None
+    thumb_y = None
+    timestamp = None
+    
     with recognizer.lock:
+        time_without_recog = 0
         if recognizer.results:
             # print(recognizer.results)
             index_x = recognizer.results["index"]["x"]
             # absolute hand positon auf kamera
             index_y = recognizer.results["index"]["y"]
+
+            index_start_x = recognizer.results["index_start"]["x"]
+            index_start_y = recognizer.results["index_start"]["y"]
+
+            middle_x = recognizer.results["middle_finger"]["x"]
+            middle_y = recognizer.results["middle_finger"]["y"]
+            thumb_x = recognizer.results["thumb"]["x"]
+            thumb_y = recognizer.results["thumb"]["y"]
             timestamp = recognizer.results["timestamp"]
+        else:
+            last_timestamp = int(time.time() * 1000.0)
+
+            time_without_recog = time.time() - last_recog_time
+
+        if time_without_recog >= 1:
+            last_index_x = None
+            last_index_y = None
+
+            x_speed_deque.clear()
+            y_speed_deque.clear()
+
+        else:
+            if len(x_speed_deque) > 0 and len(y_speed_deque) > 0:
+                x_speed_deque.append(x_speed_deque[-1])
+                y_speed_deque.append(y_speed_deque[-1])
+                
+    if None not in [middle_x, middle_y, thumb_x, thumb_y]: 
+        if index_y < index_start_y:      
+            checkForClick(thumb_x, thumb_y, middle_x, middle_y)
+    
+    if None not in [index_x, index_y, index_start_y, timestamp]:
+        if index_y < index_start_y:
+            # maus bewgung nur wenn finger spitze über dem gelenk ist
+
+           
             dt = (timestamp - last_timestamp)
             last_timestamp = timestamp
             last_recog_time = timestamp / 1000
@@ -133,40 +185,21 @@ while is_running:
                 speed_x = index_dx / dt_s
                 speed_y = index_dy / dt_s
 
-                x_speed_deque.append(speed_x)
-                y_speed_deque.append(speed_y)
-
-                speed_x, speed_y = get_velocity_avgs()
-                SPEED_THRESH = 0.2
+                SPEED_THRESH = 0.03
                 if abs(speed_x) < SPEED_THRESH:
                     speed_x = 0
                 if abs(speed_y) < SPEED_THRESH:
                     speed_y = 0
+                    
+                x_speed_deque.append(speed_x)
+                y_speed_deque.append(speed_y)
+
+                speed_x, speed_y = get_velocity_avgs()
+               
 
                 mouse_dx, mouse_dy = translate_speed_to_mouse_movement(
-                    speed_x, speed_y, dt_s)
-            middle_x = recognizer.results["middle_finger"]["x"]
-            middle_y = recognizer.results["middle_finger"]["y"]
-            thumb_x = recognizer.results["thumb"]["x"]
-            thumb_y = recognizer.results["thumb"]["y"]
-            checkForClick(thumb_x, thumb_y, middle_x, middle_y)
+                    speed_x, speed_y)
 
-        else:
-            last_timestamp = int(time.time() * 1000.0)
-
-            time_without_recog = time.time() - last_recog_time
-
-            if time_without_recog >= 2:
-                last_index_x = None
-                last_index_y = None
-
-                x_speed_deque.clear()
-                y_speed_deque.clear()
-
-            else:
-                if len(x_speed_deque) > 0 and len(y_speed_deque) > 0:
-                    x_speed_deque.append(x_speed_deque[-1])
-                    y_speed_deque.append(y_speed_deque[-1])
-
-    move_mouse(mouse_dx, mouse_dy)
-    time.sleep(0.001)
+                move_mouse(mouse_dx, mouse_dy)
+                
+    time.sleep(0.01)

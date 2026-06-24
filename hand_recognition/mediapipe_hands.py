@@ -19,8 +19,8 @@ class HandRecognizerThread:
             base_options=python.BaseOptions(model_asset_path=model_path),
             num_hands=self.num_hands,
             running_mode=vision.RunningMode.VIDEO,
-            min_hand_detection_confidence=0.5,
-            min_hand_presence_confidence=0.5,
+            min_hand_detection_confidence=0.3,
+            min_hand_presence_confidence=0.3,
             min_tracking_confidence=0.5
         )
         self.detector = vision.HandLandmarker.create_from_options(OPTIONS)
@@ -41,7 +41,6 @@ class HandRecognizerThread:
             # Capture a frame from the webcam
             ret, frame = self.cap.read()
             frame = cv2.flip(frame, 1)
-            frame_y, frame_x = frame.shape[:2]
 
             # convert to mediapipe image
             mp_frame = mp.Image(image_format=mp.ImageFormat.SRGB, data=frame)
@@ -59,23 +58,31 @@ class HandRecognizerThread:
 
                 rel_index_x = landmarks[8].x
                 rel_index_y = landmarks[8].y
+                print(landmarks[8].z)
 
                 rel_middle_x = landmarks[12].x
                 rel_middle_y = landmarks[12].y
 
                 rel_thumb_x = landmarks[4].x
                 rel_thumb_y = landmarks[4].y
+                
+                
+                rel_index_start_x = landmarks[5].x
+                rel_index_start_y = landmarks[5].y
+
 
                 index = {"x": rel_index_x, "y": rel_index_y}
                 middle_finger = {"x": rel_middle_x, "y": rel_middle_y}
                 thumb = {"x": rel_thumb_x, "y": rel_thumb_y}
+                index_start = {"x": rel_index_start_x, "y": rel_index_start_y}
 
                 with self.lock:
                     self.results = {
                         "index": index,
                         "middle_finger": middle_finger,
                         "thumb": thumb,
-                        "timestamp" : timestamp_ms
+                        "timestamp" : timestamp_ms,
+                        "index_start" : index_start
                     }
 
             else:
