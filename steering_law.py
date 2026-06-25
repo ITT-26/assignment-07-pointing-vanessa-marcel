@@ -49,7 +49,7 @@ class SteeringApp:
         self.log_df = self.create_log_df()
        
 
-        self.DATA_PATH = Path(f"./data/{input_mode}")
+        self.DATA_PATH = Path(f"./data/{input_mode}/")
         self.DATA_PATH.mkdir(parents=True, exist_ok=True)
         self.input_mode = input_mode
 
@@ -159,7 +159,7 @@ class SteeringApp:
         self.log_df.loc[len(self.log_df)] = line
 
     def save_log_data(self):
-        file = f"{self.DATA_PATH}steering_{self.current_combination["width"]}_{self.current_combination["distance"]}_{self.pid}.csv"
+        file = f"{self.DATA_PATH}/steering_{self.current_combination["width"]}_{self.current_combination["distance"]}_{self.pid}.csv"
         self.log_df.to_csv(
             file, index=False)
 
