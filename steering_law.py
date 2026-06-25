@@ -219,7 +219,10 @@ setup_window(win)
 
 participantID = 0
 trials = 1
-input_mode = "unknown"
+
+
+input = 0
+inputs =  ["pose", "mouse", "latency", "touchpad"]
 
 # first command line input is participant-ID
 if len(sys.argv) > 1:
@@ -231,8 +234,9 @@ if len(sys.argv) > 2:
 
 # third command line input is input mode (relevant for logging)
 if len(sys.argv) > 3:
-    input_mode = sys.argv[3]
+    input = int(sys.argv[3])
 
+input_mode = inputs[input]
 
 app = SteeringApp(win, participantID, trials, input_mode)
 app.start()
