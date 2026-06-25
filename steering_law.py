@@ -8,7 +8,7 @@ import time
 from configparser import ConfigParser
 import pandas as pd
 import random
-
+from pathlib import Path
 
 def setup_window(window):
     maximize_window_size(window)
@@ -47,7 +47,10 @@ class SteeringApp:
 
         self.trial_start_timestamp = int(time.time())
         self.log_df = self.create_log_df()
-        self.DATA_PATH = f"./data/"
+       
+
+        self.DATA_PATH = Path(f"./data/{input_mode}")
+        self.DATA_PATH.mkdir(parents=True, exist_ok=True)
         self.input_mode = input_mode
 
         self.start_line = None
