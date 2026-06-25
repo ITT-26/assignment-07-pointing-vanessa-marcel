@@ -91,11 +91,11 @@ def checkForClick(thumb_x, thumb_y, mid_x, mid_y):
     global last_click
     if (mid_x - thumb_x) > -CLICK_THRESHOLD and (mid_x - thumb_x) < CLICK_THRESHOLD and (mid_y - thumb_y) > -CLICK_THRESHOLD and (mid_y - thumb_y):
         if (time.time() - last_click) >= 0.5:
-            print("click")
+            # print("click")
             mouse.press(Button.left)
             mouse.release(Button.left)
             last_click = time.time()
-            print(last_click)
+            # print(last_click)
     else:
         pass
 

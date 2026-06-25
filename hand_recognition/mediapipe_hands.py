@@ -58,7 +58,7 @@ class HandRecognizerThread:
 
                 rel_index_x = landmarks[8].x
                 rel_index_y = landmarks[8].y
-                print(landmarks[8].z)
+               # print(landmarks[8].z)
 
                 rel_middle_x = landmarks[12].x
                 rel_middle_y = landmarks[12].y
