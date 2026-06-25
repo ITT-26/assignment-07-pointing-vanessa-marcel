@@ -29,8 +29,9 @@ class SteeringApp:
         window.push_handlers(self.mouse_state)
         self.window = window
         self.batch = pyglet.graphics.Batch()
+        self.foreground_group = pyglet.graphics.Group(1)
         self.pid = pid
-        
+
         self.trials = trials
         self.current_trial = 1
 
@@ -39,13 +40,27 @@ class SteeringApp:
         self.combinations = []
         self.current_combination = None
 
-        self.objects = []
+        self.points = []
+        self.lines = []
 
         self.mouse_circle = None
 
         self.trial_start_timestamp = int(time.time())
         self.log_df = self.create_log_df()
-        self.DATA_PATH = f"./data/{input_mode}/"
+        self.DATA_PATH = f"./data/"
+        self.input_mode = input_mode
+
+        self.start_line = None
+        self.goal_line = None
+        self.path_rect = None
+
+        self.run_started = False
+
+    def start(self):
+        self.create_all_combinations()
+        self.choose_combination()
+        self.create_log_df()
+        self.create_path()
 
     def read_app_params(self):
         parser = ConfigParser()
@@ -68,9 +83,9 @@ class SteeringApp:
         self.current_combination = self.combinations.pop(index)
 
     def next_combination(self):
+        self.current_trial = 1
         self.save_log_data()
         self.log_df = self.create_log_df()
-        self.objects.clear()
         self.choose_combination()
         self.create_path()
 
@@ -80,16 +95,14 @@ class SteeringApp:
 
         start_x = self.window.width // 2 - distance // 2
         start_y = self.window.height // 2 - width // 2
-        start_line = self.draw_start_line(start_x, start_y, length=width)
-        self.objects.append(start_line)
+        self.start_line = self.draw_start_line(start_x, start_y, length=width)
 
-        path_rect = self.draw_path_rectangle(start_x, start_y, width, distance)
-        self.objects.append(path_rect)
+        self.path_rect = self.draw_path_rectangle(
+            start_x, start_y, width, distance)
 
         goal_x = start_x + distance
         goal_y = start_y
-        goal_line = self.draw_goal_line(goal_x, goal_y, length=width)
-        self.objects.append(goal_line)
+        self.goal_line = self.draw_goal_line(goal_x, goal_y, length=width)
 
     def draw_path_rectangle(self, x, y, width, distance):
         path_rect = shapes.Rectangle(
@@ -125,52 +138,79 @@ class SteeringApp:
 
     def create_log_df(self):
         df = pd.DataFrame(columns=["iteration", "pid", "path_w",
-                          "path_d", "success", "start_timestamp", "end_timestamp"])
+                          "path_d", "success", "start_timestamp", "end_timestamp", "input_mode"])
         return df
 
     def add_data_line(self, success: bool):
         line = {
             "iteration": self.current_trial,
             "pid": self.pid,
-            "path_w": self.path_width,
-            "path_d": self.distance,
+            "path_w": self.current_combination["width"],
+            "path_d": self.current_combination["distance"],
             "success": success,
             "start_timestamp": self.trial_start_timestamp,
-            "end_timestamp": int(time.time())
+            "end_timestamp": int(time.time()),
+            "input_mode": self.input_mode
         }
+
         self.log_df.loc[len(self.log_df)] = line
 
     def save_log_data(self):
+        file = f"{self.DATA_PATH}steering_{self.current_combination["width"]}_{self.current_combination["distance"]}_{self.pid}.csv"
         self.log_df.to_csv(
-            f"{self.DATA_PATH}steering_{self.path_width}_{self.distance}_{self.pid}", index=False)
+            file, index=False)
 
     def next_trial(self):
         self.current_trial += 1
-        self.objects.clear()
         self.create_path()
 
     def end_app(self):
         self.save_log_data()
+        self.window.close()
         pyglet.app.exit()
 
     def cross_start_line(self):
+        self.points.clear()
+        self.lines.clear()
         self.set_start_timestamp()
+        self.run_started = True
 
     def cross_goal_line(self):
+        self.lines.clear()
+        self.points.clear()
         self.add_data_line(success=True)
+        self.run_started = False
         if self.current_trial < self.trials:
             self.next_trial()
-        else:
-            self.current_trial = 1
+        elif len(self.combinations) > 0:
             self.next_combination()
+        else:
+            self.end_app()
 
-    def unsuccessful_try(self):
+    def complete_unsuccessful_try(self):
+        self.lines.clear()
+        self.points.clear()
         self.add_data_line(success=False)
+        self.run_started = False
         if self.current_trial < self.trials:
             self.next_trial()
-        else:
-            self.current_trial = 1
+        elif len(self.combinations) > 0:
             self.next_combination()
+        else:
+            self.end_app()
+
+    def add_line_point(self, x, y):
+        self.points.append((x, y))
+
+        if len(self.points) >= 2:
+            last_x, last_y = self.points[-2]
+
+            self.lines.append(shapes.Line(
+                last_x, last_y, x, y,
+                thickness=5,
+                color=(0, 200, 0),
+                batch=self.batch, group=self.foreground_group)
+            )
 
 
 win = window.Window(vsync=False)
@@ -179,7 +219,7 @@ setup_window(win)
 
 participantID = 0
 trials = 1
-input_mode = "unknown" 
+input_mode = "unknown"
 
 # first command line input is participant-ID
 if len(sys.argv) > 1:
@@ -191,7 +231,7 @@ if len(sys.argv) > 2:
 
 # third command line input is input mode (relevant for logging)
 if len(sys.argv) > 3:
-    input_mode = int(sys.argv[3])
+    input_mode = sys.argv[3]
 
 
 app = SteeringApp(win, participantID, trials, input_mode)
@@ -206,16 +246,39 @@ def on_mouse_enter(x, y):
 @win.event
 def on_mouse_motion(x, y, dx, dy):
     app.update_mouse_circle(x, y)
+    path_top = app.path_rect.y + app.path_rect.height
+    old_x = x - dx
+    if y > app.path_rect.y and y < path_top:
+        if app.run_started:
+            app.add_line_point(x, y)
+        if x >= app.start_line.x and old_x <= app.start_line.x and not app.run_started:  # and
+            app.cross_start_line()
+            return
+        if app.run_started and x >= app.goal_line.x and old_x <= app.goal_line.x:
+            app.cross_goal_line()
+            return
+
+    if app.run_started:
+        if y > path_top or y < app.path_rect.y:
+            app.complete_unsuccessful_try()
 
 
 @win.event
 def on_mouse_drag(x, y, dx, dy, buttons, modifiers):
     app.update_mouse_circle(x, y)
+    path_top = app.path_rect.y + app.path_rect.height
+    old_x = x - dx
+    if y > app.path_rect.y and y < path_top:
+        if x >= app.start_line.x and old_x <= app.start_line.x and not app.run_started:  # and
+            app.cross_start_line()
+            return
+        if app.run_started and x >= app.goal_line.x and old_x <= app.goal_line.x:
+            app.cross_goal_line()
+            return
 
-
-@win.event
-def on_mouse_press(x, y, button, modifiers):
-    pass
+    if app.run_started:
+        if y > path_top or y < app.path_rect.y:
+            app.complete_unsuccessful_try()
 
 
 @win.event
