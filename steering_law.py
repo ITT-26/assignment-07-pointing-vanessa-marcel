@@ -9,6 +9,8 @@ from configparser import ConfigParser
 import pandas as pd
 import random
 from pathlib import Path
+from collections import deque
+
 
 def setup_window(window):
     maximize_window_size(window)
@@ -47,7 +49,6 @@ class SteeringApp:
 
         self.trial_start_timestamp = int(time.time())
         self.log_df = self.create_log_df()
-       
 
         self.DATA_PATH = Path(f"./data/{input_mode}/")
         self.DATA_PATH.mkdir(parents=True, exist_ok=True)
@@ -58,6 +59,8 @@ class SteeringApp:
         self.path_rect = None
 
         self.run_started = False
+
+        self.motion_events = deque()
 
     def start(self):
         self.create_all_combinations()
@@ -98,13 +101,15 @@ class SteeringApp:
 
         start_x = self.window.width // 2 - distance // 2
         start_y = self.window.height // 2 - width // 2
-        self.start_line = self.draw_start_line(start_x, start_y, length=width)
 
         self.path_rect = self.draw_path_rectangle(
             start_x, start_y, width, distance)
 
+        self.start_line = self.draw_start_line(start_x, start_y, length=width)
+
         goal_x = start_x + distance
         goal_y = start_y
+
         self.goal_line = self.draw_goal_line(goal_x, goal_y, length=width)
 
     def draw_path_rectangle(self, x, y, width, distance):
@@ -114,13 +119,13 @@ class SteeringApp:
 
     def draw_start_line(self, x, y, length):
         start_line = shapes.Line(
-            x, y, x, y+length, thickness=15, color=(26, 128, 0), batch=self.batch
+            x, y, x, y+length, thickness=5, color=(26, 128, 0), batch=self.batch
         )
         return start_line
 
     def draw_goal_line(self, x, y, length):
         goal_line = shapes.Line(
-            x, y, x, y+length, thickness=15, color=(26, 128, 0), batch=self.batch
+            x, y, x, y+length, thickness=5, color=(26, 128, 0), batch=self.batch
         )
         return goal_line
 
@@ -225,7 +230,7 @@ trials = 1
 
 
 input = 0
-inputs =  ["pose", "mouse", "latency", "touchpad"]
+inputs = ["pose", "mouse", "latency", "touchpad"]
 
 # first command line input is participant-ID
 if len(sys.argv) > 1:
@@ -252,6 +257,35 @@ def on_mouse_enter(x, y):
 
 @win.event
 def on_mouse_motion(x, y, dx, dy):
+    t = time.time()
+
+    if app.input_mode == "latency":
+        t = time.time() + 0.150
+
+    app.motion_events.append({
+        "t": t,
+        "x": x,
+        "y": y,
+        "dx": dx
+    })
+
+
+@win.event
+def on_mouse_drag(x, y, dx, dy, buttons, modifiers):
+    t = time.time()
+
+    if app.input_mode == "latency":
+        t = time.time() + 0.150
+
+    app.motion_events.append({
+        "t": t,
+        "x": x,
+        "y": y,
+        "dx": dx
+    })
+
+
+def perform_mouse_motion_event(x, y, dx):
     app.update_mouse_circle(x, y)
     path_top = app.path_rect.y + app.path_rect.height
     old_x = x - dx
@@ -264,28 +298,16 @@ def on_mouse_motion(x, y, dx, dy):
         if app.run_started and x >= app.goal_line.x and old_x <= app.goal_line.x:
             app.cross_goal_line()
             return
-
     if app.run_started:
         if y > path_top or y < app.path_rect.y:
             app.complete_unsuccessful_try()
 
 
-@win.event
-def on_mouse_drag(x, y, dx, dy, buttons, modifiers):
-    app.update_mouse_circle(x, y)
-    path_top = app.path_rect.y + app.path_rect.height
-    old_x = x - dx
-    if y > app.path_rect.y and y < path_top:
-        if x >= app.start_line.x and old_x <= app.start_line.x and not app.run_started:  # and
-            app.cross_start_line()
-            return
-        if app.run_started and x >= app.goal_line.x and old_x <= app.goal_line.x:
-            app.cross_goal_line()
-            return
-
-    if app.run_started:
-        if y > path_top or y < app.path_rect.y:
-            app.complete_unsuccessful_try()
+def motion_events_polling(dt):
+    t = time.time()
+    while app.motion_events and t >= app.motion_events[0]["t"]:
+        m_event = app.motion_events.popleft()
+        perform_mouse_motion_event(m_event["x"], m_event["y"], m_event["dx"])
 
 
 @win.event
@@ -294,4 +316,5 @@ def on_draw():
     app.batch.draw()
 
 
+pyglet.clock.schedule_interval(motion_events_polling, 0.005)
 pyglet.app.run()
