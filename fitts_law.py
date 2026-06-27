@@ -69,7 +69,7 @@ class Circle:
 def addData():
     global trial_count, participantID, target_amount, target_w, target_d, counter, inputs, input
     data.append([trial_count, participantID, target_amount, target_w, target_d, counter, int(time.time()), inputs[input]])
-    print(data[-1])
+    # print(data[-1])
 
 def updateFl():
     global current_target
@@ -162,7 +162,7 @@ def on_mouse_press(x, y, button, modifiers):
             trial_count += 1
             if trial_count == trials:
                 saveData()
-                print(combi_count)
+                # print(combi_count)
                 if combi_count == combi_amount:
                     os._exit(0)
                 chooseCombination()
