@@ -1,6 +1,6 @@
 # here goes your Fitts' Law application
 import pyglet
-from pyglet import window, shapes 
+from pyglet import window, shapes
 from pyglet.window import mouse
 import sys
 from configparser import ConfigParser
@@ -9,6 +9,7 @@ import time
 import os
 import csv
 import random
+from pathlib import Path
 
 participantID = 0
 trials = 3
@@ -30,8 +31,9 @@ current_target = 0
 counter = 0
 trial_count = 1
 input = 0
-data = [["iteration", "pid", "num_targets", "target_w", "target_d", "target_id", "timestamp", "input"]]
-inputs =  ["pose", "mouse", "latency", "touchpad"]
+data = [["iteration", "pid", "num_targets", "target_w",
+         "target_d", "target_id", "timestamp", "input"]]
+inputs = ["pose", "mouse", "latency", "touchpad"]
 combinations = []
 combi_count = 1
 combi_amount = 0
@@ -53,10 +55,12 @@ if len(sys.argv) > 2:
 if len(sys.argv) > 3:
     input = int(sys.argv[3])
 
+
 class Circle:
     def __init__(self, x, y):
-        self.circle = shapes.Circle(x, y, target_r, color=(128, 128, 128), batch=batch)
-    
+        self.circle = shapes.Circle(
+            x, y, target_r, color=(128, 128, 128), batch=batch)
+
     def setColour(self, on):
         if on:
             self.circle.color = (255, 0, 0)
@@ -66,10 +70,13 @@ class Circle:
     def delete(self):
         self.circle.delete()
 
+
 def addData():
     global trial_count, participantID, target_amount, target_w, target_d, counter, inputs, input
-    data.append([trial_count, participantID, target_amount, target_w, target_d, counter, int(time.time()), inputs[input]])
+    data.append([trial_count, participantID, target_amount, target_w,
+                target_d, counter, int(time.time()), inputs[input]])
     # print(data[-1])
+
 
 def updateFl():
     global current_target
@@ -80,21 +87,26 @@ def updateFl():
         current_target = current_target - target_amount/2 + 1
     circles[int(current_target)].setColour(True)
 
+
 def saveData():
-    filename = f"data/fitts_{target_amount}_{target_w}_{target_d}_{participantID}.csv"
+    path = Path(f"./data/{inputs[input]}/")
+    path.mkdir(parents=True, exist_ok=True)
+    filename = f"{path}/fitts_{target_amount}_{target_w}_{target_d}_{participantID}.csv"
     with open(filename, 'w', newline='') as f:
         csv_writer = csv.writer(f)
         csv_writer.writerows(data)
+
 
 def createAllCombinations():
     global combi_amount
     for width in target_widths:
         for distance in target_distances:
             combinations.append({
-                    "width": width,
-                    "distance": distance
-                })
+                "width": width,
+                "distance": distance
+            })
     combi_amount = len(combinations)
+
 
 def chooseCombination():
     global target_w, target_r, target_d
@@ -104,8 +116,10 @@ def chooseCombination():
     target_d = combinations[index]["distance"]
     combinations.pop(index)
 
+
 createAllCombinations()
 chooseCombination()
+
 
 def setup_window(window):
     maximize_window_size(window)
@@ -130,6 +144,7 @@ def setupFL():
     current_target = 0
     counter = 0
 
+
 def createCircles():
     global target_d, target_amount
     center_x = win.width//2
@@ -142,14 +157,17 @@ def createCircles():
 
         circles.append(Circle(x, y))
 
+
 def resetCircles():
     for c in circles:
         c.delete()
     circles.clear()
     createCircles()
 
+
 createCircles()
 setupFL()
+
 
 @win.event
 def on_mouse_press(x, y, button, modifiers):
@@ -167,17 +185,51 @@ def on_mouse_press(x, y, button, modifiers):
                     os._exit(0)
                 chooseCombination()
                 resetCircles()
-                combi_count +=1
+                combi_count += 1
                 trial_count = 0
             setupFL()
         else:
             addData()
             counter += 1
-            updateFl()     
+            updateFl()
+
+
+mouse_circle = None
+
+def create_mouse_circle(x, y):
+    global mouse_circle
+    
+    RADIUS = 5
+    center_offset = RADIUS//2
+    mouse_circle = shapes.Circle(
+        x - center_offset, y - center_offset, radius=RADIUS, color=(0, 255, 0), batch=batch)
+    
+
+
+def update_mouse_circle(target_x, target_y):
+    global mouse_circle
+    
+    center_offset = mouse_circle.radius // 2
+    mouse_circle.x = target_x - center_offset
+    mouse_circle.y = target_y - center_offset
+
+
+
+@win.event
+def on_mouse_enter(x, y):
+    create_mouse_circle(x, y)
+
+@win.event
+def on_mouse_motion(x, y, dx, dy):
+    global mouse_circle
+    if mouse_circle is not None:
+        update_mouse_circle(x, y)
+
 
 @win.event
 def on_draw():
     win.clear()
     batch.draw()
+
 
 pyglet.app.run()
