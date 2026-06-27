@@ -215,7 +215,7 @@ def perform_click_event(x, y):
             counter += 1
             circles[int(current_target)].setColour(False)
             trial_count += 1
-            if trial_count == trials:
+            if trial_count >= trials:
                 saveData()
                 # print(combi_count)
                 if combi_count == combi_amount:
