@@ -107,9 +107,22 @@ def chooseCombination():
 createAllCombinations()
 chooseCombination()
 
-WINDOW_SIZE = (2*PADDING + 2*target_w + target_d)
+def setup_window(window):
+    maximize_window_size(window)
+    window.maximize()
+    window.set_caption("Steering Law Application")
 
-win = window.Window(WINDOW_SIZE, WINDOW_SIZE)
+
+def maximize_window_size(window):
+    display = pyglet.display.get_display()
+    screen = display.get_default_screen()
+    window.width = screen.width
+    window.height = screen.height
+
+
+win = window.Window()
+setup_window(win)
+
 
 def setupFL():
     global target_amount, target_d, current_target, data, counter
@@ -119,12 +132,13 @@ def setupFL():
 
 def createCircles():
     global target_d, target_amount
-    center = WINDOW_SIZE/2
+    center_x = win.width//2
+    center_y = win.height//2
     rad = target_d/2
     for i in range(target_amount):
         angle = -(2 * math.pi * i / target_amount)
-        x = center + (rad * math.sin(angle))
-        y = center + (rad * math.cos(angle))
+        x = center_x + (rad * math.sin(angle))
+        y = center_y + (rad * math.cos(angle))
 
         circles.append(Circle(x, y))
 
