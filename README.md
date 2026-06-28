@@ -15,16 +15,18 @@
 - It can be started with `python fitts_law.py`.
 - Target widths, distances and the amount of targets can be set in the [`config.ini`](./config.ini) file under `[FLCONFIG]`. Multiples values seperated by commas are possible for widths and distances.
 - Participant ID, number of trials and input mode for the application can be set by command line.
-- Command line parameters are: `...` 
-- An example for starting the application with parameters is `python fitts_law.py`. 
+- The first command line parameter is the participant ID. The second paremter is the number of trials per combination. The last parameter is the number of the input mode. 
+- The index modes are: 0 = poiting input, 1 = mouse, 2 = mouse with latency, 3 = touchpad
+- An example for starting the application with parameters is `python fitts_law.py 1 3 1`. 
 
 # Task 3 - Steering Law Application
 - The Steering Law application is in [`steering_law.py`](./steering_law.py).
 - It can be started with `python steering_law.py`.
 - Tunnel widths and distances can be set in the [`config.ini`](./config.ini) file under `[SLCONFIG]`. Multiples values seperated by commas are possible.
 - Participant ID, number of trials and input mode for the application can be set by command line.
-- Command line parameters are: `...`
-- An example for starting the application with parameters is `python steering_law.py ...`. 
+- The first command line parameter is the participant ID. The second paremter is the number of trials per combination. The last parameter is the number of the input mode. 
+- The index modes are: 0 = poiting input, 1 = mouse, 2 = mouse with latency, 3 = touchpad
+- An example for starting the application with parameters is `python steering_law.py 2 2 2`. 
 - A trial is started when crossing the left green line of the tunnel from left to right and ends when the right line is crossed.
 - When the top or bottom of the tunnel is crossed during a trial, the trial is canceled and the trial is recoreded as unsuccessful like in the paper introducing the Steering Law task.
 
