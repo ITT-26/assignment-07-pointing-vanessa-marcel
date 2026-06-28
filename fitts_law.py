@@ -250,6 +250,22 @@ def on_mouse_motion(x, y, dx, dy):
         "y": y,
         "dx": dx
     })
+
+# added this to prevent freezes with touchpad
+@win.event
+def on_mouse_drag(x, y, dx, dy, buttons, modifiers):
+    print("drag", x, y)
+
+    t = time.time()
+    if inputs[input] == "latency":
+        t += 0.150
+
+    motion_events.append({
+        "t": t,
+        "x": x,
+        "y": y,
+        "dx": dx
+    })
     
 
 
@@ -268,6 +284,8 @@ def mouse_events_polling(dt):
     while click_events and t >= click_events[0]["t"]:
         c_event = click_events.popleft()
         perform_click_event(c_event["x"], c_event["y"])
+
+win.set_mouse_visible(False)
         
 @win.event
 def on_draw():

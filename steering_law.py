@@ -309,6 +309,7 @@ def motion_events_polling(dt):
         m_event = app.motion_events.popleft()
         perform_mouse_motion_event(m_event["x"], m_event["y"], m_event["dx"])
 
+win.set_mouse_visible(False)
 
 @win.event
 def on_draw():
