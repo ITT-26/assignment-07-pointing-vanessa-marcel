@@ -21,11 +21,11 @@ Two members of this team and one external person participated. All participants 
   - Results Patricpant 1:
     1. Fitts' Law
       - mouse
-      - pointer
+      - pointing
       - touchpad
       - mouse with latency
     2. Steering Law
-      - pointer
+      - pointing
       - mouse with latency
       - mouse
       - touchpad
@@ -34,10 +34,10 @@ Two members of this team and one external person participated. All participants 
       - mouse
       - touchpad
       - mouse with latency
-      - pointer
+      - pointing
     2. Steering Law
       - mouse with latency
-      - pointer
+      - pointing
       - mouse
       - touchpad
   - Results Patricpant 3:
@@ -45,14 +45,14 @@ Two members of this team and one external person participated. All participants 
       - mouse
       - touchpad
       - mouse with latency
-      - pointer
+      - pointing
     2. Fitts' Law
       - mouse with latency
       - mouse
-      - pointer
+      - pointing
       - touchpad
-3. Before the study the participants got the chance to try out the pointing input method and were guided to use it.
-4. Then the right application ([`fitts_law.py`](../fitts_law.py) or [`steering_law.py`](../steering_law.py)) was manually started by the experimenters (who were also participants in two cases) with the corresponding parameters for every input device condition. If the input device condition was pointer the pointing input programm was also started manually by the  experimenter before beginning.
+3. Before the study the participants got the chance to try out the pointing input method and were guided to use it. Also, sensitivity was adpated if necesseray.
+4. Then the right application ([`fitts_law.py`](../fitts_law.py) or [`steering_law.py`](../steering_law.py)) was manually started by the experimenters (who were also participants in two cases) with the corresponding parameters for every input device condition. If the input device condition was pointing the pointing input programm was also started manually by the  experimenter before beginning.
 5. If necessary participants were instructed on how to perform the tasks and that breaks were possible after each iteration. For Fitts' Law participants were told that they needed to click the red circles as fast as possible and that an iteration always started with a click on the circle at the top. For Steering Law participants were told to cross the tunnel (red rectangle) from the left to the rights side as fast as possible but while paying attention not to leave the tunnel towards the top or the bottom since this would have been an error. They were also told that an iteration started when crossing the left green line from left to right and that the goal was to cross the right green line in the same manner.
 6. For every input condition the Fitts' Law application chose a random combination of the target radii and target distances specified in the [`config.ini`](../config.ini) file. The Steering Law application also chose a random combination of the tunnel widths and tunnel distances with the values from the same file. The config file included three values for all the variables from the assignment sheet. These values were combined in each possible way, so for each task 9 combinations were formed.
 7. For each input mode each chosen combination needed to be performed sequentially three times. 
