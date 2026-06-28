@@ -45,6 +45,7 @@ circles = []
 mouse_circle = None
 
 batch = pyglet.graphics.Batch()
+pointer = pyglet.graphics.Batch()
 
 motion_events = deque()
 click_events = deque()
@@ -181,8 +182,7 @@ def create_mouse_circle(x, y):
     RADIUS = 5
     center_offset = RADIUS//2
     mouse_circle = shapes.Circle(
-        x - center_offset, y - center_offset, radius=RADIUS, color=(0, 255, 0), batch=batch)
-
+        x - center_offset, y - center_offset, radius=RADIUS, color=(0, 255, 0), batch=pointer)
 
 def update_mouse_circle(target_x, target_y):
     global mouse_circle
@@ -273,6 +273,7 @@ def mouse_events_polling(dt):
 def on_draw():
     win.clear()
     batch.draw()
+    pointer.draw()
 
 pyglet.clock.schedule_interval(mouse_events_polling, 0.005)
 pyglet.app.run()
