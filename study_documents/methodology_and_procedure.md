@@ -11,7 +11,7 @@ Every combination of the independent variables was tested three times in a row. 
 Through testing each combination three times in a row the detection of small learning effects was also possible.
 
 # Participants
-Two members of this team and one external person participated. All participants used their right hand for interaction. The data of the participants can be found in the [data directory](../data/).
+Two members of this team and one external person participated. Particpants could use whichever hand they preferred each task. Switching hands was also possible. The data of the participants can be found in the [data directory](../data/).
 
 
 # Procedure
