@@ -81,7 +81,7 @@ class Circle:
 def addData():
     global trial_count, participantID, target_amount, target_w, target_d, counter, inputs, input
     data.append([trial_count, participantID, target_amount, target_w,
-                target_d, counter, int(time.time()), inputs[input]])
+                target_d, counter, round(time.time(), 4), inputs[input]])
     # print(data[-1])
 
 

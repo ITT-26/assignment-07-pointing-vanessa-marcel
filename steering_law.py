@@ -47,7 +47,7 @@ class SteeringApp:
 
         self.mouse_circle = None
 
-        self.trial_start_timestamp = int(time.time())
+        self.trial_start_timestamp = round(time.time(), 4)
         self.log_df = self.create_log_df()
 
         self.DATA_PATH = Path(f"./data/{input_mode}/")
@@ -142,7 +142,7 @@ class SteeringApp:
         self.mouse_circle.y = target_y - center_offset
 
     def set_start_timestamp(self):
-        self.trial_start_timestamp = int(time.time())
+        self.trial_start_timestamp = round(time.time(), 4)
 
     def create_log_df(self):
         df = pd.DataFrame(columns=["iteration", "pid", "path_w",
@@ -157,7 +157,7 @@ class SteeringApp:
             "path_d": self.current_combination["distance"],
             "success": success,
             "start_timestamp": self.trial_start_timestamp,
-            "end_timestamp": int(time.time()),
+            "end_timestamp": round(time.time(), 4),
             "input_mode": self.input_mode
         }
 
