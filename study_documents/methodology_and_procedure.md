@@ -20,37 +20,37 @@ Two members of this team and one external person participated. All participants 
 3. The order of Fitts' or Steering Law tasks and input modes was selected randomly before the study for all participants (via lucky wheel).
   - Results Patricpant 1:
     1. Fitts' Law
-      1. mouse
-      2. pointer
-      3. touchpad
-      4. mouse with latency
+      - mouse
+      - pointer
+      - touchpad
+      - mouse with latency
     2. Steering Law
-      1. pointer
-      2. mouse with latency
-      3.  mouse
-      4. touchpad
+      - pointer
+      - mouse with latency
+      - mouse
+      - touchpad
   - Results Patricpant 2:
     1. Fitts' Law
-      1. mouse
-      2. touchpad
-      3. mouse with latency
-      4. pointer
+      - mouse
+      - touchpad
+      - mouse with latency
+      - pointer
     2. Steering Law
-      1. mouse with latency
-      2. pointer
-      3. mouse
-      4. touchpad
+      - mouse with latency
+      - pointer
+      - mouse
+      - touchpad
   - Results Patricpant 3:
     1. Steering Law
-      1. mouse
-      2. touchpad
-      3.  mouse with latency
-      4. pointer
+      - mouse
+      - touchpad
+      - mouse with latency
+      - pointer
     2. Fitts' Law
-      1. mouse with latency
-      2. mouse
-      3. pointer
-      4. touchpad
+      - mouse with latency
+      - mouse
+      - pointer
+      - touchpad
 3. Before the study the participants got the chance to try out the pointing input method and were guided to use it.
 4. Then the right application ([`fitts_law.py`](../fitts_law.py) or [`steering_law.py`](../steering_law.py)) was manually started by the experimenters (who were also participants in two cases) with the corresponding parameters for every input device condition. If the input device condition was pointer the pointing input programm was also started manually by the  experimenter before beginning.
 5. If necessary participants were instructed on how to perform the tasks and that breaks were possible after each iteration. For Fitts' Law participants were told that they needed to click the red circles as fast as possible and that an iteration always started with a click on the circle at the top. For Steering Law participants were told to cross the tunnel (red rectangle) from the left to the rights side as fast as possible but while paying attention not to leave the tunnel towards the top or the bottom since this would have been an error. They were also told that an iteration started when crossing the left green line from left to right and that the goal was to cross the right green line in the same manner.
