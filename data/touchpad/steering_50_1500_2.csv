@@ -1,0 +1,4 @@
+iteration,pid,path_w,path_d,success,start_timestamp,end_timestamp,input_mode
+1,2,50,1500,True,1782677280.2959,1782677285.1805,touchpad
+2,2,50,1500,True,1782677286.3271,1782677290.3508,touchpad
+3,2,50,1500,True,1782677291.9774,1782677297.2341,touchpad
