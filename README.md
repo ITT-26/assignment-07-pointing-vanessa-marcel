@@ -9,6 +9,7 @@
 - The pointer is moved based on the tracked index finger. Movement ist only possible when the index finger is above the joint between hand and index finger. So you can turn your hand upside down or simply form a fist to disable input. When doing this, clicking is also disabled.
 - Clicking is done by simply bringing the thumb and middle finger of the tracked hand together.
 - It is not possible to use two hands for interaction. 
+- The application can be stopped by pressing `ESC` or `q`.
 
 # Task 2 - Fitts’ Law Application
 - The Fitts' Law Application is in [`fitts_law.py`](./fitts_law.py).
