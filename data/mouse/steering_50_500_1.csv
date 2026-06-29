@@ -1,0 +1,4 @@
+iteration,pid,path_w,path_d,success,start_timestamp,end_timestamp,input_mode
+1,1,50,500,True,1782744900.5118,1782744902.5359,mouse
+2,1,50,500,True,1782744904.4074,1782744906.6474,mouse
+3,1,50,500,True,1782744908.0989,1782744910.2983,mouse

@@ -1,0 +1,4 @@
+iteration,pid,path_w,path_d,success,start_timestamp,end_timestamp,input_mode
+1,1,50,500,False,1782744624.0077,1782744625.8263,latency
+2,1,50,500,True,1782744630.2182,1782744632.4641,latency
+3,1,50,500,True,1782744635.0642,1782744637.639,latency
