@@ -12,6 +12,7 @@ def add_fitts_index_of_difficulty_column(data):
     data["difficulty"] = np.log2(data["target_d"]/data["target_w"] + 1)
     return data
 
+
 def add_fitts_mt_column(data):
     data = data.copy()
     data["mt"] = np.nan
@@ -25,10 +26,12 @@ def add_fitts_mt_column(data):
 
     return data
 
+
 def add_fitts_throughput_column(data):
     data = data.copy()
     data["throughput"] = data["difficulty"] / data["mt"]
     return data
+
 
 def transform_fitts_to_single_line_cond(data):
     data = data.copy()
@@ -40,6 +43,7 @@ def transform_fitts_to_single_line_cond(data):
     )
     return mean_mt
 
+
 def prep_fitts_data(data):
     data = data.copy()
     data = add_fitts_index_of_difficulty_column(data)
@@ -47,6 +51,7 @@ def prep_fitts_data(data):
     data = transform_fitts_to_single_line_cond(data)
     data = add_fitts_throughput_column(data)
     return data
+
 
 def prepate_steering_data(data):
     data = data.copy()
@@ -73,6 +78,7 @@ def read_steering_data():
     complete_df = pd.concat(dfs)
     return complete_df
 
+
 def read_fitts_data():
     data_dir = "./data/"
     dfs = []
@@ -85,6 +91,7 @@ def read_fitts_data():
 
     complete_df = pd.concat(dfs)
     return complete_df
+
 
 def create_fitts_mt_plot(data):
     inputs = data["input"].unique()
@@ -121,7 +128,7 @@ def create_fitts_mt_plot(data):
             mean_data["mt"],
             linewidth=2,
             label="Mean MT"
-)
+        )
 
         ax.set_title(input_mode)
         ax.set_xlabel("ID (bits)")
@@ -129,6 +136,7 @@ def create_fitts_mt_plot(data):
 
     plt.tight_layout()
     plt.savefig("./plots/fitts_mt_subplots.png")
+
 
 def create_throughput_per_input_plot(data):
     data = data.copy()
@@ -179,6 +187,8 @@ def create_throughput_per_input_plot(data):
     plt.savefig("./plots/throughput_by_input.png")
 
 # done with AI
+
+
 def create_throughput_participant_plots(data):
     data = data.copy()
 
@@ -223,6 +233,8 @@ def create_throughput_participant_plots(data):
     plt.savefig("./plots/throughput_per_participant.png")
 
 # conducted linear mixed-effects regression with AI
+
+
 def fitts_linear_mixed_effects_regression(data):
     df = data.copy()
     df["pid"] = df["pid"].astype("category")
@@ -231,14 +243,15 @@ def fitts_linear_mixed_effects_regression(data):
     df["mt"] = df["mt"].astype(float)
 
     model = smf.mixedlm(
-    "mt ~ difficulty * input",
-    data=df,
-    groups=df["pid"],
-    re_formula="~difficulty"
+        "mt ~ difficulty * input",
+        data=df,
+        groups=df["pid"],
+        re_formula="~difficulty"
     )
 
     result = model.fit()
     print(result.summary())
+
 
 def fitts_compute_friedmann(data):
     df = data.copy()
@@ -275,28 +288,38 @@ def create_steering_time_plot(data):
     pose_data = relevant[relevant["input_mode"] == "pose"]
     latency_data = relevant[relevant["input_mode"] == "latency"]
     touchpad_data = relevant[relevant["input_mode"] == "touchpad"]
-    
-    mouse_grouped = mouse_data.groupby("difficulty")["duration"].mean().reset_index()
-    pose_grouped = pose_data.groupby("difficulty")["duration"].mean().reset_index()
-    latency_grouped = latency_data.groupby("difficulty")["duration"].mean().reset_index()
-    touchpad_grouped = touchpad_data.groupby("difficulty")["duration"].mean().reset_index()
 
+    mouse_grouped = mouse_data.groupby(
+        "difficulty")["duration"].mean().reset_index()
+    pose_grouped = pose_data.groupby(
+        "difficulty")["duration"].mean().reset_index()
+    latency_grouped = latency_data.groupby(
+        "difficulty")["duration"].mean().reset_index()
+    touchpad_grouped = touchpad_data.groupby(
+        "difficulty")["duration"].mean().reset_index()
 
-    plt.figure(figsize=(10, 5))
+    plt.figure(figsize=(10, 7.5))
 
     # print(len(mouse_data), len(latency_data), len(pose_data), len(touchpad_data))
-    plt.scatter(mouse_data["difficulty"], mouse_data["duration"], label='mouse values', color='blue')
-    plt.plot(mouse_grouped["difficulty"], mouse_grouped["duration"], label='mouse mean', color='blue')
-    
-    plt.scatter(latency_data["difficulty"], latency_data["duration"], label='mouse with latency values', color='orange')
-    plt.plot(latency_grouped["difficulty"], latency_grouped["duration"], label='mouse with latency mean', color='orange')
-    
-    plt.scatter(pose_data["difficulty"], pose_data["duration"], label='pointing input values', color='green')    
-    plt.plot(pose_grouped["difficulty"], pose_grouped["duration"], label='pointing input mean', color='green')
-    
-    plt.scatter(touchpad_data["difficulty"], touchpad_data["duration"], label='touchpad values', color='red')
-    plt.plot(touchpad_grouped["difficulty"], touchpad_grouped["duration"], label='touchpad mean', color='red')
-    
+    plt.scatter(mouse_data["difficulty"],
+                mouse_data["duration"],  color='blue')
+    plt.plot(mouse_grouped["difficulty"],
+             mouse_grouped["duration"], label='mouse', color='blue')
+
+    plt.scatter(latency_data["difficulty"],
+                latency_data["duration"], color='orange')
+    plt.plot(latency_grouped["difficulty"], latency_grouped["duration"],
+             label='mouse with latency', color='orange')
+
+    plt.scatter(pose_data["difficulty"], pose_data["duration"], color='green')
+    plt.plot(pose_grouped["difficulty"], pose_grouped["duration"],
+             label='pointing input', color='green')
+
+    plt.scatter(touchpad_data["difficulty"],
+                touchpad_data["duration"], color='red')
+    plt.plot(touchpad_grouped["difficulty"],
+             touchpad_grouped["duration"], label='touchpad', color='red')
+
     plt.xlabel('steering law difficulty (D/W)')
     plt.ylabel('completion time in ms')
     plt.legend()
@@ -304,14 +327,112 @@ def create_steering_time_plot(data):
     plt.savefig("./plots/steering_times.png")
 
 
-#steering_df = read_steering_data()
-#steering_df = prepate_steering_data(steering_df)
-#create_steering_time_plot(steering_df)
+def create_steering_error_rate_plot(data):
+    data = data.copy()
+    fig = plt.figure(figsize=(10, 7.5))
+
+    mouse_data = data[data["input_mode"] == "mouse"]
+    pose_data = data[data["input_mode"] == "pose"]
+    latency_data = data[data["input_mode"] == "latency"]
+    touchpad_data = data[data["input_mode"] == "touchpad"]
+
+    # this section was edited with AI to get error rate grouped on input device and sucess rate
+    mouse_grouped = mouse_data.groupby("difficulty").agg({
+        "duration": "mean",
+        "success": lambda x: (x).mean()
+    }).reset_index()
+
+    pose_grouped = pose_data.groupby("difficulty").agg({
+        "duration": "mean",
+        "success": lambda x: (x).mean()
+    }).reset_index()
+
+    latency_grouped = latency_data.groupby("difficulty").agg({
+        "duration": "mean",
+        "success": lambda x: (x).mean()
+    }).reset_index()
+
+    touchpad_grouped = touchpad_data.groupby("difficulty").agg({
+        "duration": "mean",
+        "success": lambda x: (x).mean()
+    }).reset_index()
+
+    plt.figure(figsize=(10, 5))
+
+    plt.plot(mouse_grouped["difficulty"],
+             mouse_grouped["success"], label='mouse', color='blue')
+    plt.plot(latency_grouped["difficulty"],
+             latency_grouped["success"], label='mouse with latency', color='orange')
+    plt.plot(pose_grouped["difficulty"],
+             pose_grouped["success"], label='pointing input', color='green')
+    plt.plot(touchpad_grouped["difficulty"],
+             touchpad_grouped["success"], label='touchpad', color='red')
+
+    plt.xlabel('steering law difficulty (D/W)')
+    plt.ylabel('completion rate')
+    plt.legend()
+    plt.title('Comparison of Completion Rates for All Steering Law Trials')
+    plt.savefig("./plots/steering_completion.png")
+
+
+def steering_linear_mixed_effects_regression(data):
+    df = data.copy()
+    df = data[data["success"] == True]
+    df["pid"] = df["pid"].astype("category")
+    df["input_mode"] = df["input_mode"].astype("category")
+    df["difficulty"] = df["difficulty"].astype(float)
+    df["duration"] = df["duration"].astype(float)
+
+    model = smf.mixedlm(
+        "duration ~ difficulty * input_mode",
+        data=df,
+        groups=df["pid"],
+        re_formula="~difficulty"
+    )
+
+    result = model.fit()
+    print(result.summary())
+
+
+def steering_compute_friedmann(data):
+    df = data.copy()
+    df = data[data["success"] == True]
+    df_pivot = df.pivot_table(
+        index="pid",
+        columns="input_mode",
+        values="duration",
+        aggfunc="mean"
+    )
+    stat, p = friedmanchisquare(
+        df_pivot["latency"],
+        df_pivot["touchpad"],
+        df_pivot["pose"],
+        df_pivot["mouse"]
+    )
+
+    print(f"input: {stat}, {p}")
+
+    df_agg = df.groupby(["pid", "difficulty"], as_index=False)[
+        "duration"].mean()
+    pivot = df_agg.pivot(index="pid", columns="difficulty", values="duration")
+
+    stat, p = friedmanchisquare(*[pivot[col] for col in pivot.columns])
+
+    print(f"difficulty: {stat}, {p}")
+
+
+steering_df = read_steering_data()
+steering_df = prepate_steering_data(steering_df)
+
+# create_steering_time_plot(steering_df)
+# create_steering_error_rate_plot(steering_df)
+steering_linear_mixed_effects_regression(steering_df)
+steering_compute_friedmann(steering_df)
 
 fitts_df = read_fitts_data()
 fitts_df = prep_fitts_data(fitts_df)
-#create_fitts_mt_plot(fitts_df)
-#create_throughput_per_input_plot(fitts_df)
-#create_throughput_participant_plots(fitts_df)
-#fitts_linear_mixed_effects_regression(fitts_df)
+# create_fitts_mt_plot(fitts_df)
+# create_throughput_per_input_plot(fitts_df)
+# create_throughput_participant_plots(fitts_df)
+fitts_linear_mixed_effects_regression(fitts_df)
 fitts_compute_friedmann(fitts_df)

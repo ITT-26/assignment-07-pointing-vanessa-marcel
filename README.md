@@ -33,10 +33,11 @@
 
 # Task 4 - Adding Latency
 - Latency (150 ms) is added to the applications when starting them in the latency input mode (third parameter = 2).
+
 # Task 5 - Evaluating Input Techniques
-- Files documenting the study can be found in the ['study_documents'](./study_documents/) directory.
-- The data gathered in the study can be found in the ['data'](./data/) directory. There is a subdirectory for every input method.
-- The figure images are in ...
+- Files documenting the study can be found in the [`study_documents`](./study_documents/) directory.
+- The data gathered in the study can be found in the [`data`](./data/) directory. There is a subdirectory for every input method.
+- The plots can be found in the [`plots`](./plots/) directory. Code for the creation is in [`plot_creation.py`](./plot_creation.py).
 
 
  
