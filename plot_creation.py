@@ -171,9 +171,56 @@ def create_throughput_per_input_plot(data):
 
     plt.xlabel("Input Method")
     plt.ylabel("Throughput (bits/s)")
-    plt.title("Fitts' Law Throughput Across Input Methods")
+    plt.title("Fitts' Law - Throughput Across Input Methods")
 
     plt.savefig("./plots/throughput_by_input.png")
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+# done with AI
+def create_throughput_participant_plots(data):
+    data = data.copy()
+
+    tp_per_participant = (
+        data
+        .groupby(["pid", "input", "iteration", "difficulty"])["throughput"]
+        .mean()
+        .reset_index()
+    )
+
+    inputs = sorted(tp_per_participant["input"].unique())
+
+    fig, axes = plt.subplots(2, 2, figsize=(10, 8), sharey=True)
+    axes = axes.flatten()
+
+    for ax, inp in zip(axes, inputs):
+
+        subset = tp_per_participant[tp_per_participant["input"] == inp]
+        pids = sorted(subset["pid"].unique())
+
+        box_data = [
+            subset[subset["pid"] == pid]["throughput"].values
+            for pid in pids
+        ]
+
+        ax.boxplot(
+            box_data,
+            positions=pids,
+            widths=0.6,
+            showfliers=False
+        )
+
+        ax.set_title(inp)
+        ax.set_xlabel("Participant ID")
+        ax.set_ylabel("Throughput (bits/s)")
+
+    plt.suptitle(
+        "Fitts' Law - Throughput per Participant and Input Method"
+    )
+
+    plt.tight_layout()
+    plt.savefig("./plots/throughput_per_participant.png")
 
 
 def create_steering_time_plot(data):
@@ -223,3 +270,4 @@ fitts_df = read_fitts_data()
 fitts_df = prep_fitts_data(fitts_df)
 create_fitts_mt_plot(fitts_df)
 create_throughput_per_input_plot(fitts_df)
+create_throughput_participant_plots(fitts_df)
