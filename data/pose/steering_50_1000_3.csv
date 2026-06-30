@@ -1,0 +1,4 @@
+iteration,pid,path_w,path_d,success,start_timestamp,end_timestamp,input_mode
+1,3,50,1000,False,1782747903.601,1782747904.3345,pose
+2,3,50,1000,False,1782747907.1693,1782747908.9494,pose
+3,3,50,1000,False,1782747911.1844,1782747916.9353,pose
