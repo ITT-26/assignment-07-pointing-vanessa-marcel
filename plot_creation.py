@@ -31,7 +31,7 @@ def transform_fitts_to_single_line_cond(data):
     data = data.copy()
     mean_mt = (
         data
-        .groupby(["iteration","input", "difficulty"])["mt"]
+        .groupby(["iteration", "pid", "input", "difficulty"])["mt"]
         .mean()
         .reset_index()
     )
