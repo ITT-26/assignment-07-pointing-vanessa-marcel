@@ -127,6 +127,54 @@ def create_fitts_mt_plot(data):
     plt.tight_layout()
     plt.savefig("./plots/fitts_mt_subplots.png")
 
+def create_throughput_per_input_plot(data):
+    data = data.copy()
+
+    tp_per_participant = (
+        data
+        .groupby(["pid", "input", "iteration"])["throughput"]
+        .mean()
+        .reset_index()
+    )
+
+    inputs = tp_per_participant["input"].unique()
+
+    plt.figure(figsize=(8, 5))
+
+    box_data = [
+        tp_per_participant[
+            tp_per_participant["input"] == inp
+        ]["throughput"]
+        for inp in inputs
+    ]
+
+    plt.boxplot(
+        box_data,
+        tick_labels=inputs
+    )
+
+    # Scatter participant values
+    for pos, inp in enumerate(inputs, start=1):
+        values = tp_per_participant.loc[
+            tp_per_participant["input"] == inp,
+            "throughput"
+        ]
+
+        # Small horizontal jitter
+        x = np.random.normal(pos, 0.04, len(values))
+
+        plt.scatter(
+            x,
+            values,
+            alpha=0.8
+        )
+
+    plt.xlabel("Input Method")
+    plt.ylabel("Throughput (bits/s)")
+    plt.title("Fitts' Law Throughput Across Input Methods")
+
+    plt.savefig("./plots/throughput_by_input.png")
+
 
 def create_steering_time_plot(data):
     data = data.copy()
@@ -174,3 +222,4 @@ create_steering_time_plot(steering_df)
 fitts_df = read_fitts_data()
 fitts_df = prep_fitts_data(fitts_df)
 create_fitts_mt_plot(fitts_df)
+create_throughput_per_input_plot(fitts_df)
