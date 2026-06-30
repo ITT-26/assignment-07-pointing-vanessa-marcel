@@ -1,6 +1,9 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import statsmodels.formula.api as smf
+from scipy.stats import friedmanchisquare
+import pingouin as pg
 import os
 
 
@@ -175,9 +178,6 @@ def create_throughput_per_input_plot(data):
 
     plt.savefig("./plots/throughput_by_input.png")
 
-import matplotlib.pyplot as plt
-import numpy as np
-
 # done with AI
 def create_throughput_participant_plots(data):
     data = data.copy()
@@ -222,6 +222,48 @@ def create_throughput_participant_plots(data):
     plt.tight_layout()
     plt.savefig("./plots/throughput_per_participant.png")
 
+# conducted linear mixed-effects regression with AI
+def fitts_linear_mixed_effects_regression(data):
+    df = data.copy()
+    df["pid"] = df["pid"].astype("category")
+    df["input"] = df["input"].astype("category")
+    df["difficulty"] = df["difficulty"].astype(float)
+    df["mt"] = df["mt"].astype(float)
+
+    model = smf.mixedlm(
+    "mt ~ difficulty * input",
+    data=df,
+    groups=df["pid"],
+    re_formula="~difficulty"
+    )
+
+    result = model.fit()
+    print(result.summary())
+
+def fitts_compute_friedmann(data):
+    df = data.copy()
+    df_pivot = df.pivot_table(
+        index="pid",
+        columns="input",
+        values="mt",
+        aggfunc="mean"
+    )
+    stat, p = friedmanchisquare(
+        df_pivot["mouse"],
+        df_pivot["touchpad"],
+        df_pivot["pose"],
+        df_pivot["latency"]
+    )
+
+    print(f"input: {stat}, {p}")
+
+    df_agg = df.groupby(["pid", "difficulty"], as_index=False)["mt"].mean()
+    pivot = df_agg.pivot(index="pid", columns="difficulty", values="mt")
+
+    stat, p = friedmanchisquare(*[pivot[col] for col in pivot.columns])
+
+    print(f"difficulty: {stat}, {p}")
+
 
 def create_steering_time_plot(data):
     data = data.copy()
@@ -262,12 +304,14 @@ def create_steering_time_plot(data):
     plt.savefig("./plots/steering_times.png")
 
 
-steering_df = read_steering_data()
-steering_df = prepate_steering_data(steering_df)
-create_steering_time_plot(steering_df)
+#steering_df = read_steering_data()
+#steering_df = prepate_steering_data(steering_df)
+#create_steering_time_plot(steering_df)
 
 fitts_df = read_fitts_data()
 fitts_df = prep_fitts_data(fitts_df)
-create_fitts_mt_plot(fitts_df)
-create_throughput_per_input_plot(fitts_df)
-create_throughput_participant_plots(fitts_df)
+#create_fitts_mt_plot(fitts_df)
+#create_throughput_per_input_plot(fitts_df)
+#create_throughput_participant_plots(fitts_df)
+#fitts_linear_mixed_effects_regression(fitts_df)
+fitts_compute_friedmann(fitts_df)
